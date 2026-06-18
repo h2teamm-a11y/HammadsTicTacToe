@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neon Tic-Tac-Toe: Unbeatable Bot</title>
+    <style>
+        /* Import Futuristic Neon Font */
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
+
+        /* Base Setup & Scanline Overlay Effect */
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #0a0a0f;
+            background-image: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.3) 50%),
+                              linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
+            background-size: 100% 4px, 6px 100%;
+            font-family: 'Orbitron', sans-serif;
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Container Layout */
+        .game-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            z-index: 2;
+        }
+
+        /* Headings & Glow Animations */
+        h1 {
+            font-size: 3.5rem;
+            font-weight: 900;
+            margin: 0 0 10px 0;
+            letter-spacing: 4px;
+            color: #fff;
+            text-shadow: 0 0 5px #fff, 0 0 10px #0ff, 0 0 20px #0ff, 0 0 40px #0ff;
+            animation: titlePulse 2s infinite alternate;
+        }
+
+        h2 {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin: 0 0 20px 0;
+            letter-spacing: 2px;
+            color: #8892b0;
+            text-shadow: 0 0 5px rgba(0, 255, 255, 0.3);
+        }
+
+        #status {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 30px;
+            letter-spacing: 1px;
+            min-height: 36px;
+            transition: all 0.3s ease;
+        }
+
+        /* Dynamic Status Coloring Utilities */
+        .status-player { color: #00aaff; text-shadow: 0 0 10px #00aaff; }
+        .status-bot { color: #ff2244; text-shadow: 0 0 10px #ff2244; }
+        .status-draw { color: #ffff55; text-shadow: 0 0 10px #ffff55; }
+
+        /* Neon Grid Layout */
+        .board {
+            display: grid;
+            grid-template-columns: repeat(3, 120px);
+            grid-template-rows: repeat(3, 120px);
+            gap: 15px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 12px;
+            box-shadow: 0 0 15px rgba(150, 0, 255, 0.2), inset 0 0 15px rgba(150, 0, 255, 0.1);
+            border: 1px solid rgba(150, 0, 255, 0.3);
+        }
+
+        /* Interactive Board Cells */
+        .cell {
+            background: rgba(10, 10, 15, 0.8);
+            border: 2px solid rgba(0, 255, 255, 0.2);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 4rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            user-select: none;
+        }
+
+        /* Blue Hover Glow for Player */
+        .cell:hover:not(.occupied) {
+            border-color: #00aaff;
+            box-shadow: 0 0 15px rgba(0, 170, 255, 0.6), inset 0 0 10px rgba(0, 170, 255, 0.4);
+            background: rgba(0, 170, 255, 0.05);
+        }
+
+        .cell.occupied {
+            cursor: not-allowed;
+        }
+
+        /* Marker Formatting & Entry Animations */
+        .symbol-O {
+            color: #00aaff;
+            text-shadow: 0 0 10px #00aaff, 0 0 20px #00aaff, 0 0 40px #00aaff;
+            animation: scaleIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+
+        .symbol-X {
+            color: #ff2244;
+            text-shadow: 0 0 10px #ff2244, 0 0 20px #ff2244, 0 0 40px #ff2244;
+            animation: scaleIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+
+        /* Pulse Highlight Sequence for Winning Lines */
+        .cell.winning-cell {
+            animation: winPulse 0.6s infinite alternate;
+        }
+
+        /* Neon Interface Controls */
+        button {
+            margin-top: 40px;
+            padding: 12px 30px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1rem;
+            font-weight: 700;
+            letter-spacing: 2px;
+            background: transparent;
+            color: #fff;
+            border: 2px solid rgba(255, 255, 255, 0.5);
+            border-radius: 6px;
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        button:hover {
+            color: #00aaff;
+            border-color: #00aaff;
+            box-shadow: 0 0 20px rgba(0, 170, 255, 0.6), inset 0 0 10px rgba(0, 170, 255, 0.2);
+            text-shadow: 0 0 5px #00aaff;
+        }
+
+        /* Keyframes Animations */
+        @keyframes titlePulse {
+            from { text-shadow: 0 0 5px #fff, 0 0 10px #0ff, 0 0 20px #0ff; }
+            to { text-shadow: 0 0 10px #fff, 0 0 20px #0ff, 0 0 35px #0ff, 0 0 50px #0ff; }
+        }
+
+        @keyframes scaleIn {
+            0% { transform: scale(0); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        @keyframes winPulse {
+            0% {
+                background: rgba(255, 255, 255, 0.1);
+                box-shadow: 0 0 10px currentColor, inset 0 0 5px currentColor;
+            }
+            100% {
+                background: rgba(255, 255, 255, 0.3);
+                box-shadow: 0 0 25px currentColor, inset 0 0 15px currentColor;
+                transform: scale(1.03);
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="game-container">
+        <h1>TIC-TAC-TECTONIC</h1>
+        <h2>WILL U BE ABLE TO WIN?</h2>
+        <div id="status" class="status-player">Your Turn (O)</div>
+        
+        <div class="board" id="board">
+            <div class="cell" data-index="0"></div>
+            <div class="cell" data-index="1"></div>
+            <div class="cell" data-index="2"></div>
+            <div class="cell" data-index="3"></div>
+            <div class="cell" data-index="4"></div>
+            <div class="cell" data-index="5"></div>
+            <div class="cell" data-index="6"></div>
+            <div class="cell" data-index="7"></div>
+            <div class="cell" data-index="8"></div>
+        </div>
+
+        <button id="resetBtn">RESET GAME</button>
+    </div>
+
+    <script>
+        // Game State Variables
+        let board = Array(9).fill(null);
+        let gameActive = true;
+        let isBotThinking = false;
+
+        const HUMAN = 'O';
+        const BOT = 'X';
+
+        // Winning Layout Indexes Structure Matrix
+        const WIN_CONDITIONS = [
+            [0, 1, 2], [3, 4, 5], [6, 7, 8], // Rows
+            [0, 3, 6], [1, 4, 7], [2, 5, 8], // Columns
+            [0, 4, 8], [2, 4, 6]             // Diagonals
+        ];
+
+        // Document Object Model element query Selectors
+        const cells = document.querySelectorAll('.cell');
+        const statusDisplay = document.getElementById('status');
+        const resetBtn = document.getElementById('resetBtn');
+
+        // Initial Setup Lifecycle Listeners
+        cells.forEach(cell => cell.addEventListener('click', handleCellClick));
+        resetBtn.addEventListener('click', resetGame);
+
+        function handleCellClick(e) {
+            const index = parseInt(e.target.getAttribute('data-index'));
+
+            // Block interaction if space is locked, filled or bot is processing
+            if (board[index] !== null || !gameActive || isBotThinking) return;
+
+            makeMove(index, HUMAN);
+
+            const result = checkGameState(board);
+            if (result) {
+                processEndGame(result);
+            } else {
+                // Hand over matrix state ownership lock context over to the MiniMax execution loop
+                isBotThinking = true;
+                statusDisplay.textContent = "Bot Thinking...";
+                statusDisplay.className = "status-bot";
+                
+                // Add runtime artificial delay latency for psychological balance interface update pacing 
+                setTimeout(() => {
+                    const bestMoveIndex = getBestMove();
+                    makeMove(bestMoveIndex, BOT);
+                    
+                    const botResult = checkGameState(board);
+                    if (botResult) {
+                        processEndGame(botResult);
+                    } else {
+                        statusDisplay.textContent = "Your Turn (O)";
+                        statusDisplay.className = "status-player";
+                        isBotThinking = false;
+                    }
+                }, 400);
+            }
+        }
+
+        function makeMove(index, player) {
+            board[index] = player;
+            const cell = cells[index];
+            cell.classList.add('occupied');
+            
+            const span = document.createElement('span');
+            span.textContent = player;
+            span.classList.add(player === HUMAN ? 'symbol-O' : 'symbol-X');
+            cell.appendChild(span);
+        }
+
+        // Returns { winner: 'X'/'O'/'Tie', line: [a,b,c] } or null
+        function checkGameState(currentBoard) {
+            for (let condition of WIN_CONDITIONS) {
+                const [a, b, c] = condition;
+                if (currentBoard[a] && currentBoard[a] === currentBoard[b] && currentBoard[a] === currentBoard[c]) {
+                    return { winner: currentBoard[a], line: condition };
+                }
+            }
+            if (!currentBoard.includes(null)) {
+                return { winner: 'Tie', line: null };
+            }
+            return null;
+        }
+
+        /* =========================================================================
+           CORE GAME ENGINE ARTIFICIAL INTELLIGENCE: MINIMAX WITH ALPHA-BETA PRUNING
+           =========================================================================
+        */
+        function getBestMove() {
+            let bestScore = -Infinity;
+            let move = -1;
+
+            for (let i = 0; i < 9; i++) {
+                if (board[i] === null) {
+                    board[i] = BOT;
+                    // Initial alpha = -Infinity, beta = +Infinity execution sequence call
+                    let score = minimax(board, 0, false, -Infinity, Infinity);
+                    board[i] = null;
+
+                    if (score > bestScore) {
+                        bestScore = score;
+                        move = i;
+                    }
+                }
+            }
+            return move;
+        }
+
+        function minimax(tempBoard, depth, isMaximizing, alpha, beta) {
+            const result = checkGameState(tempBoard);
+            
+            // Base evaluation evaluation weight offsets targeting optimization depth metrics
+            if (result) {
+                if (result.winner === BOT) return 10 - depth;
+                if (result.winner === HUMAN) return depth - 10;
+                if (result.winner === 'Tie') return 0;
+            }
+
+            if (isMaximizing) {
+                let maxScore = -Infinity;
+                for (let i = 0; i < 9; i++) {
+                    if (tempBoard[i] === null) {
+                        tempBoard[i] = BOT;
+                        let score = minimax(tempBoard, depth + 1, false, alpha, beta);
+                        tempBoard[i] = null;
+                        maxScore = Math.max(maxScore, score);
+                        alpha = Math.max(alpha, score);
+                        if (beta <= alpha) break; // Pruning condition trigger branch break
+                    }
+                }
+                return maxScore;
+            } else {
+                let minScore = Infinity;
+                for (let i = 0; i < 9; i++) {
+                    if (tempBoard[i] === null) {
+                        tempBoard[i] = HUMAN;
+                        let score = minimax(tempBoard, depth + 1, true, alpha, beta);
+                        tempBoard[i] = null;
+                        minScore = Math.min(minScore, score);
+                        beta = Math.min(beta, score);
+                        if (beta <= alpha) break; // Pruning condition trigger branch break
+                    }
+                }
+                return minScore;
+            }
+        }
+
+        // Interface Display and End Game Resolution Handler
+        function processEndGame(result) {
+            gameActive = false;
+            isBotThinking = false;
+
+            if (result.winner === HUMAN) {
+                statusDisplay.textContent = "🏆 YOU WIN!";
+                statusDisplay.className = "status-player";
+                highlightWinningLine(result.line, '#00aaff');
+            } else if (result.winner === BOT) {
+                statusDisplay.textContent = "💀 U LOSE";
+                statusDisplay.className = "status-bot";
+                highlightWinningLine(result.line, '#ff2244');
+            } else {
+                statusDisplay.textContent = "🤝 IT'S A DRAW";
+                statusDisplay.className = "status-draw";
+            }
+        }
+
+        function highlightWinningLine(line, color) {
+            if (!line) return;
+            line.forEach(index => {
+                cells[index].classList.add('winning-cell');
+                cells[index].style.color = color;
+            });
+        }
+
+        // Application State Hardware Reset Clean Routine Cycle 
+        function resetGame() {
+            board = Array(9).fill(null);
+            gameActive = true;
+            isBotThinking = false;
+            statusDisplay.textContent = "Your Turn (O)";
+            statusDisplay.className = "status-player";
+
+            cells.forEach(cell => {
+                cell.innerHTML = '';
+                cell.classList.remove('occupied', 'winning-cell');
+                cell.style.color = '';
+            });
+        }
+    </script>
+</body>
+</html>
