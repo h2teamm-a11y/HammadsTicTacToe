@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Neon Tic-Tac-Toe: Multi-Difficulty</title>
+    <title>Neon Tic-Tac-Toe: Blitz Edition</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
 
@@ -50,7 +50,6 @@
             color: #8892b0;
         }
 
-        /* Difficulty Selector System */
         .difficulty-container {
             display: flex;
             gap: 15px;
@@ -71,7 +70,6 @@
             transition: all 0.3s ease;
         }
 
-        /* Dynamic active states for distinct visual cues */
         .diff-btn[data-diff="easy"].active {
             color: #00ff66;
             border-color: #00ff66;
@@ -96,7 +94,7 @@
         #status {
             font-size: 1.4rem;
             font-weight: 700;
-            margin-bottom: 25px;
+            margin-bottom: 10px;
             min-height: 34px;
         }
 
@@ -104,7 +102,21 @@
         .status-bot { color: #ff2244; text-shadow: 0 0 10px #ff2244; }
         .status-draw { color: #ffff55; text-shadow: 0 0 10px #ffff55; }
 
-        /* Board Grid Layout */
+        /* Neon Timer Styling */
+        #timer {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 25px;
+            letter-spacing: 2px;
+            transition: all 0.3s ease;
+        }
+        .timer-active { color: #00ffff; text-shadow: 0 0 10px #00ffff; }
+        .timer-warning { 
+            color: #ff2244; 
+            text-shadow: 0 0 10px #ff2244, 0 0 20px #ff2244; 
+            animation: blink 0.4s infinite alternate; 
+        }
+
         .board {
             display: grid;
             grid-template-columns: repeat(3, 120px);
@@ -189,6 +201,11 @@
             0% { background: rgba(255, 255, 255, 0.05); box-shadow: 0 0 10px currentColor; }
             100% { background: rgba(255, 255, 255, 0.2); box-shadow: 0 0 25px currentColor; transform: scale(1.02); }
         }
+
+        @keyframes blink {
+            from { opacity: 1; }
+            to { opacity: 0.3; }
+        }
     </style>
 </head>
 <body>
@@ -199,11 +216,12 @@
 
         <div class="difficulty-container">
             <button class="diff-btn" data-diff="easy">EASY</button>
-            <button class="diff-btn" data-diff="normal" class="active">NORMAL</button>
+            <button class="diff-btn" data-diff="normal">NORMAL</button>
             <button class="diff-btn" data-diff="hard">HARD</button>
         </div>
 
         <div id="status" class="status-player">Your Turn (O)</div>
+        <div id="timer" class="timer-active">TIME LEFT: <span id="time-val">15</span>s</div>
         
         <div class="board" id="board">
             <div class="cell" data-index="0"></div>
@@ -224,7 +242,12 @@
         let board = Array(9).fill(null);
         let gameActive = true;
         let isBotThinking = false;
-        let currentDifficulty = 'normal'; // Dynamic AI mode tracking config
+        let currentDifficulty = 'normal';
+        
+        // Timer Engine Properties
+        let timerInterval = null;
+        let timeLeft = 15;
+        const TURN_LIMITS = { easy: 30, normal: 15, hard: 10 };
 
         const HUMAN = 'O';
         const BOT = 'X';
@@ -237,15 +260,16 @@
 
         const cells = document.querySelectorAll('.cell');
         const statusDisplay = document.getElementById('status');
+        const timerDisplay = document.getElementById('time-val');
+        const timerContainer = document.getElementById('timer');
         const resetBtn = document.getElementById('resetBtn');
         const diffButtons = document.querySelectorAll('.diff-btn');
 
-        // Setup difficulty buttons event loops
         diffButtons.forEach(btn => {
             if(btn.getAttribute('data-diff') === currentDifficulty) btn.classList.add('active');
             
             btn.addEventListener('click', (e) => {
-                if (isBotThinking) return; // Prevent switching while AI computes
+                if (isBotThinking) return;
                 diffButtons.forEach(b => b.classList.remove('active'));
                 currentDifficulty = e.target.getAttribute('data-diff');
                 e.target.classList.add('active');
@@ -256,10 +280,14 @@
         cells.forEach(cell => cell.addEventListener('click', handleCellClick));
         resetBtn.addEventListener('click', resetGame);
 
+        // Start initial runtime game countdown
+        startTimer();
+
         function handleCellClick(e) {
             const index = parseInt(e.target.getAttribute('data-index'));
             if (board[index] !== null || !gameActive || isBotThinking) return;
 
+            stopTimer(); // Freeze timer immediately upon structural input capture
             makeMove(index, HUMAN);
 
             const result = checkGameState(board);
@@ -269,6 +297,7 @@
                 isBotThinking = true;
                 statusDisplay.textContent = "Bot Thinking...";
                 statusDisplay.className = "status-bot";
+                timerContainer.style.opacity = "0.3"; // Dim clock while bot takes actions
                 
                 setTimeout(() => {
                     const botMoveIndex = selectBotMove();
@@ -280,10 +309,59 @@
                     } else {
                         statusDisplay.textContent = "Your Turn (O)";
                         statusDisplay.className = "status-player";
+                        timerContainer.style.opacity = "1";
                         isBotThinking = false;
+                        startTimer(); // Hand dynamic timing execution loop safely back to user
                     }
                 }, 450);
             }
+        }
+
+        /* =========================================================================
+           TIMER CONTROL MECHANICS
+           =========================================================================
+        */
+        function startTimer() {
+            clearInterval(timerInterval);
+            timeLeft = TURN_LIMITS[currentDifficulty];
+            updateTimerUI();
+
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                updateTimerUI();
+
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    handleTimeoutLoss();
+                }
+            }, 1000);
+        }
+
+        function stopTimer() {
+            clearInterval(timerInterval);
+        }
+
+        function updateTimerUI() {
+            timerDisplay.textContent = timeLeft;
+            if (timeLeft <= 3) {
+                timerContainer.className = 'timer-warning';
+            } else {
+                timerContainer.className = 'timer-active';
+            }
+        }
+
+        function handleTimeoutLoss() {
+            gameActive = false;
+            isBotThinking = false;
+            statusDisplay.textContent = "💀 TIME'S UP! U LOSE";
+            statusDisplay.className = "status-bot";
+            
+            // Lock out all open matrix configurations visually
+            cells.forEach(cell => {
+                if(!cell.classList.contains('occupied')) {
+                    cell.classList.add('occupied');
+                }
+            });
         }
 
         function makeMove(index, player) {
@@ -297,23 +375,16 @@
             cell.appendChild(span);
         }
 
-        /* =========================================================================
-           DIFFICULTY HANDLING & ARTIFICIAL INTELLIGENCE CONTROLLER ROUTINES
-           =========================================================================
-        */
         function selectBotMove() {
             const emptyIndexes = board.map((v, i) => v === null ? i : null).filter(v => v !== null);
 
             if (currentDifficulty === 'easy') {
-                // Easy Mode: 100% Random choice decisions
                 return emptyIndexes[Math.floor(Math.random() * emptyIndexes.length)];
             } 
             else if (currentDifficulty === 'normal') {
-                // Normal Mode: 50% chance optimal, 50% chance random mistake
                 return Math.random() < 0.50 ? getBestMinimaxMove() : emptyIndexes[Math.floor(Math.random() * emptyIndexes.length)];
             } 
             else {
-                // Hard Mode: 100% Unbeatable perfect Alpha-Beta calculated execution path
                 return getBestMinimaxMove();
             }
         }
@@ -387,6 +458,7 @@
         function processEndGame(result) {
             gameActive = false;
             isBotThinking = false;
+            stopTimer();
 
             if (result.winner === HUMAN) {
                 statusDisplay.textContent = "🏆 YOU WIN!";
@@ -416,12 +488,15 @@
             isBotThinking = false;
             statusDisplay.textContent = "Your Turn (O)";
             statusDisplay.className = "status-player";
+            timerContainer.style.opacity = "1";
 
             cells.forEach(cell => {
                 cell.innerHTML = '';
                 cell.classList.remove('occupied', 'winning-cell');
                 cell.style.color = '';
             });
+
+            startTimer(); // Fire up a brand new countdown iteration loop structure
         }
     </script>
 </body>
