@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Neon Tic-Tac-Toe: Blitz Edition</title>
+    <title>Neon Tic-Tac-Toe: Championship Edition</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
 
@@ -42,18 +42,53 @@
             animation: titlePulse 2s infinite alternate;
         }
 
-        h2 {
-            font-size: 1.1rem;
-            font-weight: 700;
-            margin: 0 0 20px 0;
-            letter-spacing: 2px;
-            color: #8892b0;
+        /* Mode Selector Tabs */
+        .mode-container {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            background: rgba(255, 255, 255, 0.02);
+            padding: 5px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
         }
 
+        .mode-btn {
+            background: transparent;
+            border: none;
+            color: #555e78;
+            padding: 10px 20px;
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 700;
+            font-size: 0.9rem;
+            letter-spacing: 1px;
+            cursor: pointer;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+        }
+
+        .mode-btn.active {
+            color: #00ffff;
+            background: rgba(0, 255, 255, 0.08);
+            box-shadow: 0 0 10px rgba(0, 255, 255, 0.2);
+            text-shadow: 0 0 5px #00ffff;
+        }
+
+        /* Difficulty Selector System */
         .difficulty-container {
             display: flex;
             gap: 15px;
             margin-bottom: 25px;
+            transition: all 0.3s ease;
+        }
+
+        .difficulty-container.hidden {
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(-10px);
+            margin-bottom: 5px;
+            height: 0;
+            overflow: hidden;
         }
 
         .diff-btn {
@@ -102,7 +137,6 @@
         .status-bot { color: #ff2244; text-shadow: 0 0 10px #ff2244; }
         .status-draw { color: #ffff55; text-shadow: 0 0 10px #ffff55; }
 
-        /* Neon Timer Styling */
         #timer {
             font-size: 1.2rem;
             font-weight: 700;
@@ -212,11 +246,16 @@
 
     <div class="game-container">
         <h1>TIC-TAC-TOE</h1>
-        <h2>WILL U BE ABLE TO WIN?</h2>
 
-        <div class="difficulty-container">
+        <!-- Mode Architecture Configuration Elements -->
+        <div class="mode-container">
+            <button class="mode-btn active" data-mode="bot">VS BOT</button>
+            <button class="mode-btn" data-mode="local">LOCAL 2P</button>
+        </div>
+
+        <div class="difficulty-container" id="diff-box">
             <button class="diff-btn" data-diff="easy">EASY</button>
-            <button class="diff-btn" data-diff="normal">NORMAL</button>
+            <button class="diff-btn" data-diff="normal" class="active">NORMAL</button>
             <button class="diff-btn" data-diff="hard">HARD</button>
         </div>
 
@@ -242,15 +281,16 @@
         let board = Array(9).fill(null);
         let gameActive = true;
         let isBotThinking = false;
+        let currentGameMode = 'bot'; // 'bot' or 'local'
         let currentDifficulty = 'normal';
+        let localTurn = 'O'; // Tracks active user during local screen share matches
         
-        // Timer Engine Properties
         let timerInterval = null;
         let timeLeft = 15;
-        const TURN_LIMITS = { easy: 30, normal: 15, hard: 10 };
+        const TURN_LIMITS = { easy: 30, normal: 15, hard: 10, local: 15 };
 
-        const HUMAN = 'O';
-        const BOT = 'X';
+        const HUMAN = 'O'; // Blue
+        const BOT = 'X';   // Red
 
         const WIN_CONDITIONS = [
             [0, 1, 2], [3, 4, 5], [6, 7, 8],
@@ -264,10 +304,29 @@
         const timerContainer = document.getElementById('timer');
         const resetBtn = document.getElementById('resetBtn');
         const diffButtons = document.querySelectorAll('.diff-btn');
+        const modeButtons = document.querySelectorAll('.mode-btn');
+        const diffBox = document.getElementById('diff-box');
 
+        // Mode Switching Event Engine Loop
+        modeButtons.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                if (isBotThinking) return;
+                modeButtons.forEach(b => b.classList.remove('active'));
+                currentGameMode = e.target.getAttribute('data-mode');
+                e.target.classList.add('active');
+                
+                if (currentGameMode === 'local') {
+                    diffBox.classList.add('hidden');
+                } else {
+                    diffBox.classList.remove('hidden');
+                }
+                resetGame();
+            });
+        });
+
+        // Difficulty Selector Setup Logic Route
         diffButtons.forEach(btn => {
             if(btn.getAttribute('data-diff') === currentDifficulty) btn.classList.add('active');
-            
             btn.addEventListener('click', (e) => {
                 if (isBotThinking) return;
                 diffButtons.forEach(b => b.classList.remove('active'));
@@ -280,50 +339,79 @@
         cells.forEach(cell => cell.addEventListener('click', handleCellClick));
         resetBtn.addEventListener('click', resetGame);
 
-        // Start initial runtime game countdown
         startTimer();
 
         function handleCellClick(e) {
             const index = parseInt(e.target.getAttribute('data-index'));
             if (board[index] !== null || !gameActive || isBotThinking) return;
 
-            stopTimer(); // Freeze timer immediately upon structural input capture
-            makeMove(index, HUMAN);
+            stopTimer();
 
-            const result = checkGameState(board);
-            if (result) {
-                processEndGame(result);
-            } else {
-                isBotThinking = true;
-                statusDisplay.textContent = "Bot Thinking...";
-                statusDisplay.className = "status-bot";
-                timerContainer.style.opacity = "0.3"; // Dim clock while bot takes actions
+            if (currentGameMode === 'bot') {
+                /* VS BOT MODE PIPELINE */
+                makeMove(index, HUMAN);
+                const result = checkGameState(board);
                 
-                setTimeout(() => {
-                    const botMoveIndex = selectBotMove();
-                    makeMove(botMoveIndex, BOT);
+                if (result) {
+                    processEndGame(result);
+                } else {
+                    isBotThinking = true;
+                    statusDisplay.textContent = "Bot Thinking...";
+                    statusDisplay.className = "status-bot";
+                    timerContainer.style.opacity = "0.3";
                     
-                    const botResult = checkGameState(board);
-                    if (botResult) {
-                        processEndGame(botResult);
-                    } else {
-                        statusDisplay.textContent = "Your Turn (O)";
-                        statusDisplay.className = "status-player";
-                        timerContainer.style.opacity = "1";
-                        isBotThinking = false;
-                        startTimer(); // Hand dynamic timing execution loop safely back to user
-                    }
-                }, 450);
+                    // Humanized Processing Latency Calculation Engine Block
+                    const humanizedDelay = Math.floor(Math.random() * 1100) + 500; // Variable 500ms - 1600ms Delay
+                    
+                    setTimeout(() => {
+                        const botMoveIndex = selectBotMove();
+                        makeMove(botMoveIndex, BOT);
+                        
+                        const botResult = checkGameState(board);
+                        if (botResult) {
+                            processEndGame(botResult);
+                        } else {
+                            statusDisplay.textContent = "Your Turn (O)";
+                            statusDisplay.className = "status-player";
+                            timerContainer.style.opacity = "1";
+                            isBotThinking = false;
+                            startTimer();
+                        }
+                    }, humanizedDelay);
+                }
+            } else {
+                /* LOCAL 2-PLAYER MODE PIPELINE */
+                makeMove(index, localTurn);
+                const result = checkGameState(board);
+                
+                if (result) {
+                    processEndGame(result);
+                } else {
+                    // Invert active user coordinates context variables safely
+                    localTurn = (localTurn === HUMAN) ? BOT : HUMAN;
+                    updateLocalStatusUI();
+                    startTimer();
+                }
+            }
+        }
+
+        function updateLocalStatusUI() {
+            if (localTurn === HUMAN) {
+                statusDisplay.textContent = "Blue's Turn (O)";
+                statusDisplay.className = "status-player";
+            } else {
+                statusDisplay.textContent = "Red's Turn (X)";
+                statusDisplay.className = "status-bot";
             }
         }
 
         /* =========================================================================
-           TIMER CONTROL MECHANICS
+           TIMER AND TIMEOUT DISPATCH RULES
            =========================================================================
         */
         function startTimer() {
             clearInterval(timerInterval);
-            timeLeft = TURN_LIMITS[currentDifficulty];
+            timeLeft = (currentGameMode === 'bot') ? TURN_LIMITS[currentDifficulty] : TURN_LIMITS['local'];
             updateTimerUI();
 
             timerInterval = setInterval(() => {
@@ -343,24 +431,29 @@
 
         function updateTimerUI() {
             timerDisplay.textContent = timeLeft;
-            if (timeLeft <= 3) {
-                timerContainer.className = 'timer-warning';
-            } else {
-                timerContainer.className = 'timer-active';
-            }
+            timerContainer.className = (timeLeft <= 3) ? 'timer-warning' : 'timer-active';
         }
 
         function handleTimeoutLoss() {
             gameActive = false;
             isBotThinking = false;
-            statusDisplay.textContent = "💀 TIME'S UP! U LOSE";
-            statusDisplay.className = "status-bot";
             
-            // Lock out all open matrix configurations visually
-            cells.forEach(cell => {
-                if(!cell.classList.contains('occupied')) {
-                    cell.classList.add('occupied');
+            if (currentGameMode === 'bot') {
+                statusDisplay.textContent = "💀 TIME'S UP! U LOSE";
+                statusDisplay.className = "status-bot";
+            } else {
+                // In local 2P matches, whoever let the clock expire defaults the win
+                if (localTurn === HUMAN) {
+                    statusDisplay.textContent = "💀 BLUE TIMEOUT! RED WINS";
+                    statusDisplay.className = "status-bot";
+                } else {
+                    statusDisplay.textContent = "💀 RED TIMEOUT! BLUE WINS";
+                    statusDisplay.className = "status-player";
                 }
+            }
+            
+            cells.forEach(cell => {
+                if(!cell.classList.contains('occupied')) cell.classList.add('occupied');
             });
         }
 
@@ -375,6 +468,10 @@
             cell.appendChild(span);
         }
 
+        /* =========================================================================
+           BOT RUNTIME SELECTION ALGORITHMS (MINIMAX CORE)
+           =========================================================================
+        */
         function selectBotMove() {
             const emptyIndexes = board.map((v, i) => v === null ? i : null).filter(v => v !== null);
 
@@ -460,17 +557,32 @@
             isBotThinking = false;
             stopTimer();
 
-            if (result.winner === HUMAN) {
-                statusDisplay.textContent = "🏆 YOU WIN!";
-                statusDisplay.className = "status-player";
-                highlightWinningLine(result.line, '#00aaff');
-            } else if (result.winner === BOT) {
-                statusDisplay.textContent = "💀 U LOSE";
-                statusDisplay.className = "status-bot";
-                highlightWinningLine(result.line, '#ff2244');
-            } else {
+            if (result.winner === 'Tie') {
                 statusDisplay.textContent = "🤝 IT'S A DRAW";
                 statusDisplay.className = "status-draw";
+                return;
+            }
+
+            if (currentGameMode === 'bot') {
+                if (result.winner === HUMAN) {
+                    statusDisplay.textContent = "🏆 YOU WIN!";
+                    statusDisplay.className = "status-player";
+                    highlightWinningLine(result.line, '#00aaff');
+                } else {
+                    statusDisplay.textContent = "💀 U LOSE";
+                    statusDisplay.className = "status-bot";
+                    highlightWinningLine(result.line, '#ff2244');
+                }
+            } else {
+                if (result.winner === HUMAN) {
+                    statusDisplay.textContent = "🏆 BLUE WINS!";
+                    statusDisplay.className = "status-player";
+                    highlightWinningLine(result.line, '#00aaff');
+                } else {
+                    statusDisplay.textContent = "🏆 RED WINS!";
+                    statusDisplay.className = "status-bot";
+                    highlightWinningLine(result.line, '#ff2244');
+                }
             }
         }
 
@@ -486,9 +598,16 @@
             board = Array(9).fill(null);
             gameActive = true;
             isBotThinking = false;
-            statusDisplay.textContent = "Your Turn (O)";
-            statusDisplay.className = "status-player";
+            localTurn = 'O'; // Reset local turning variables state back to base
             timerContainer.style.opacity = "1";
+
+            if (currentGameMode === 'bot') {
+                statusDisplay.textContent = "Your Turn (O)";
+                statusDisplay.className = "status-player";
+            } else {
+                statusDisplay.textContent = "Blue's Turn (O)";
+                statusDisplay.className = "status-player";
+            }
 
             cells.forEach(cell => {
                 cell.innerHTML = '';
@@ -496,7 +615,7 @@
                 cell.style.color = '';
             });
 
-            startTimer(); // Fire up a brand new countdown iteration loop structure
+            startTimer();
         }
     </script>
 </body>
