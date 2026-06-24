@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mera Ghar Property Homes - Find Your Dream Home</title>
+    <!-- Google Fonts & FontAwesome for Premium Look -->
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap');
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --primary: #0B3C2D;     /* Deep Emerald Green */
+            --accent: #D4AF37;      /* Luxury Gold */
+            --dark: #222222;
+            --light: #f8f9fa;
+            --shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background-color: var(--light);
+            color: var(--dark);
+        }
+
+        /* Navigation Bar */
+        header {
+            background: #fff;
+            padding: 15px 10%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+        .logo span { color: var(--accent); }
+
+        nav a {
+            text-decoration: none;
+            color: var(--dark);
+            margin: 0 15px;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+        nav a:hover { color: var(--accent); }
+
+        .btn-list {
+            background: var(--primary);
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: 600;
+            border: 2px solid transparent;
+            transition: all 0.3s;
+        }
+        .btn-list:hover {
+            background: transparent;
+            color: var(--primary);
+            border-color: var(--primary);
+        }
+
+        /* Hero Section with Filters */
+        .hero {
+            background: linear-gradient(rgba(11, 60, 45, 0.85), rgba(11, 60, 45, 0.7)), 
+                        url('https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80') center/cover no-repeat;
+            padding: 100px 10%;
+            text-align: center;
+            color: #fff;
+        }
+
+        .hero h1 { font-size: 3rem; margin-bottom: 10px; font-weight: 700; }
+        .hero p { font-size: 1.2rem; margin-bottom: 40px; color: #e0e0e0; }
+
+        .search-container {
+            background: #fff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            max-width: 900px;
+            margin: 0 auto;
+            color: var(--dark);
+        }
+
+        .search-tabs {
+            display: flex;
+            margin-bottom: 20px;
+            gap: 10px;
+        }
+        .tab {
+            padding: 8px 24px;
+            border: none;
+            background: #e9ecef;
+            font-weight: 600;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .tab.active, .tab:hover {
+            background: var(--accent);
+            color: #fff;
+        }
+
+        .search-fields {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr) auto;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .search-fields select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 0.95rem;
+            outline: none;
+        }
+
+        .btn-search {
+            background: var(--primary);
+            color: #fff;
+            border: none;
+            padding: 12px 30px;
+            font-size: 1rem;
+            font-weight: 600;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .btn-search:hover { background: #06231a; }
+
+        /* Featured Properties Section */
+        .properties { padding: 80px 10%; }
+        .section-title {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+        .section-title h2 { font-size: 2.2rem; color: var(--primary); }
+        .section-title p { color: #666; margin-top: 5px; }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+        }
+
+        .card {
+            background: #fff;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            transition: transform 0.3s;
+        }
+        .card:hover { transform: translateY(-5px); }
+
+        .card-img {
+            height: 220px;
+            background-size: cover;
+            background-position: center;
+            position: relative;
+        }
+        .badge {
+            background: var(--accent);
+            color: #fff;
+            padding: 5px 12px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            border-radius: 4px;
+        }
+
+        .card-content { padding: 25px; }
+        .price { font-size: 1.4rem; color: var(--primary); font-weight: 700; margin-bottom: 10px; }
+        .title { font-size: 1.15rem; margin-bottom: 8px; font-weight: 600; }
+        .location { color: #777; font-size: 0.9rem; margin-bottom: 20px; }
+
+        .features {
+            display: flex;
+            justify-content: space-between;
+            border-top: 1px solid #eee;
+            padding-top: 15px;
+            color: #555;
+            font-size: 0.9rem;
+        }
+        .features i { color: var(--accent); margin-right: 5px; }
+
+        /* Footer */
+        footer {
+            background: var(--primary);
+            color: #fff;
+            text-align: center;
+            padding: 30px;
+            margin-top: 50px;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header Navigation -->
+    <header>
+        <div class="logo">Mera<span>Ghar</span></div>
+        <nav>
+            <a href="#">Home</a>
+            <a href="#">Buy</a>
+            <a href="#">Rent</a>
+            <a href="#">About</a>
+            <a href="#">Contact</a>
+        </nav>
+        <a href="#" class="btn-list">List Property</a>
+    </header>
+
+    <!-- Hero Showcase Section -->
+    <section class="hero">
+        <h1>Find Your Perfect Smart Space</h1>
+        <p>Verified plots, luxury apartments, and corporate real estate options.</p>
+        
+        <div class="search-container">
+            <div class="search-tabs">
+                <button class="tab active">Buy</button>
+                <button class="tab">Rent</button>
+            </div>
+            <div class="search-fields">
+                <select>
+                    <option>Select Location</option>
+                    <option>Islamabad</option>
+                    <option>Lahore</option>
+                    <option>Karachi</option>
+                </select>
+                <select>
+                    <option>Property Type</option>
+                    <option>House</option>
+                    <option>Apartment</option>
+                    <option>Plot</option>
+                </select>
+                <select>
+                    <option>Price Range</option>
+                    <option>PKR 50 Lakh - 1 Crore</option>
+                    <option>PKR 1 Crore - 3 Crore</option>
+                    <option>PKR 3 Crore+</option>
+                </select>
+                <button class="btn-search"><i class="fa-solid fa-magnifying-glass"></i> Search</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Properties Showcase -->
+    <section class="properties">
+        <div class="section-title">
+            <h2>Featured Listings</h2>
+            <p>Handpicked premium properties matching verified standards.</p>
+        </div>
+
+        <div class="grid">
+            <!-- Card 1 -->
+            <div class="card">
+                <div class="card-img" style="background-image: url('https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=600&q=80');">
+                    <span class="badge">For Sale</span>
+                </div>
+                <div class="card-content">
+                    <div class="price">PKR 4.5 Crore</div>
+                    <div class="title">Modern 1 Kanal Luxury Villa</div>
+                    <div class="location"><i class="fa-solid fa-location-dot"></i> DHA Phase 6, Lahore</div>
+                    <div class="features">
+                        <span><i class="fa-solid fa-bed"></i> 5 Beds</span>
+                        <span><i class="fa-solid fa-bath"></i> 6 Baths</span>
+                        <span><i class="fa-solid fa-ruler-combined"></i> 4,500 Sq.Ft</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card 2 -->
+            <div class="card">
+                <div class="card-img" style="background-image: url('https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?auto=format&fit=crop&w=600&q=80');">
+                    <span class="badge">For Sale</span>
+                </div>
+                <div class="card-content">
+                    <div class="price">PKR 1.8 Crore</div>
+                    <div class="title">Premium 2 Bed Contemporary Apartment</div>
+                    <div class="location"><i class="fa-solid fa-location-dot"></i> E-11, Islamabad</div>
+                    <div class="features">
+                        <span><i class="fa-solid fa-bed"></i> 2 Beds</span>
+                        <span><i class="fa-solid fa-bath"></i> 2 Baths</span>
+                        <span><i class="fa-solid fa-ruler-combined"></i> 1,450 Sq.Ft</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card 3 -->
+            <div class="card">
+                <div class="card-img" style="background-image: url('https://images.unsplash.com/photo-1580587771525-78b9dba3b914?auto=format&fit=crop&w=600&q=80');">
+                    <span class="badge">For Sale</span>
+                </div>
+                <div class="card-content">
+                    <div class="price">PKR 8.2 Crore</div>
+                    <div class="title">Elite Corporate Corner Workspace</div>
+                    <div class="location"><i class="fa-solid fa-location-dot"></i> Clifton, Karachi</div>
+                    <div class="features">
+                        <span><i class="fa-solid fa-building"></i> Office</span>
+                        <span><i class="fa-solid fa-bath"></i> 4 Baths</span>
+                        <span><i class="fa-solid fa-ruler-combined"></i> 6,200 Sq.Ft</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <p>&copy; 2026 Mera Ghar Property Homes. All rights reserved.</p>
+    </footer>
+
+</body>
+</html>

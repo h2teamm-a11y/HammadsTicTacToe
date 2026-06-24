@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact Us - Mera Ghar Property Homes</title>
+    <!-- Google Fonts & FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+        :root {
+            --primary: #0B3C2D;     /* Deep Emerald Green */
+            --accent: #D4AF37;      /* Luxury Gold */
+            --dark: #222222;
+            --light: #f8f9fa;
+            --gray: #666666;
+            --shadow: 0 4px 30px rgba(0,0,0,0.05);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background-color: var(--light);
+            color: var(--dark);
+            line-height: 1.6;
+        }
+
+        /* Navigation Bar */
+        header {
+            background: #fff;
+            padding: 15px 10%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            text-decoration: none;
+        }
+        .logo span { color: var(--accent); }
+
+        nav a {
+            text-decoration: none;
+            color: var(--dark);
+            margin: 0 15px;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+        nav a:hover, nav a.active { color: var(--accent); }
+
+        .btn-list {
+            background: var(--primary);
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: 600;
+            border: 2px solid transparent;
+            transition: all 0.3s;
+        }
+        .btn-list:hover {
+            background: transparent;
+            color: var(--primary);
+            border-color: var(--primary);
+        }
+
+        /* Contact Page Hero Header */
+        .contact-hero {
+            background: linear-gradient(rgba(11, 60, 45, 0.9), rgba(11, 60, 45, 0.85)), 
+                        url('https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=1200&q=80') center/cover no-repeat;
+            padding: 80px 10%;
+            text-align: center;
+            color: #fff;
+        }
+        .contact-hero h1 {
+            font-size: 2.8rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+        .contact-hero p {
+            font-size: 1.1rem;
+            color: #cce0d8;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* Main Grid Split Layout */
+        .contact-section {
+            padding: 80px 10%;
+            display: grid;
+            grid-template-columns: 1.2fr 1.8fr;
+            gap: 50px;
+        }
+
+        /* Left Side: Contact Information channels */
+        .info-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+        .info-panel h2 {
+            font-size: 1.8rem;
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+        .info-panel p {
+            color: var(--gray);
+            font-size: 0.95rem;
+        }
+
+        .contact-card {
+            background: #fff;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: var(--shadow);
+            display: flex;
+            gap: 20px;
+            align-items: flex-start;
+        }
+        .card-icon {
+            width: 50px;
+            height: 50px;
+            background: rgba(11, 60, 45, 0.06);
+            color: var(--primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            flex-shrink: 0;
+        }
+        .card-details h4 {
+            font-size: 1.1rem;
+            color: var(--primary);
+            margin-bottom: 5px;
+        }
+        .card-details p, .card-details a {
+            color: var(--gray);
+            font-size: 0.95rem;
+            text-decoration: none;
+            display: block;
+        }
+        .card-details a:hover { color: var(--accent); }
+
+        /* Right Side: Message Input Form Card */
+        .form-panel {
+            background: #fff;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+        }
+        .form-panel h3 {
+            font-size: 1.6rem;
+            color: var(--primary);
+            margin-bottom: 25px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        .form-group-full {
+            margin-bottom: 20px;
+        }
+
+        .form-control {
+            display: flex;
+            flex-direction: column;
+        }
+        .form-control label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .form-control input, .form-control select, .form-control textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 0.95rem;
+            outline: none;
+            transition: all 0.3s;
+            background-color: var(--light);
+        }
+        .form-control input:focus, .form-control select:focus, .form-control textarea:focus {
+            border-color: var(--accent);
+            background-color: #fff;
+            box-shadow: 0 0 8px rgba(212, 175, 55, 0.15);
+        }
+
+        .btn-submit {
+            background: var(--primary);
+            color: #fff;
+            border: none;
+            padding: 14px 35px;
+            font-size: 1rem;
+            font-weight: 600;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .btn-submit:hover {
+            background: #06231a;
+            box-shadow: 0 4px 15px rgba(11, 60, 45, 0.2);
+        }
+
+        /* Map Embed Placeholder Section */
+        .map-container {
+            width: 100%;
+            height: 350px;
+            background-color: #e5e3df;
+            margin-top: 50px;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            position: relative;
+        }
+        /* Using standard elegant map style representation */
+        .map-placeholder {
+            width: 100%;
+            height: 100%;
+            border: 0;
+        }
+
+        /* Footer Element Box */
+        footer {
+            background: var(--primary);
+            color: #fff;
+            text-align: center;
+            padding: 30px;
+            font-size: 0.9rem;
+        }
+
+        /* Responsive Layout Adjustments */
+        @media (max-width: 992px) {
+            .contact-section { grid-template-columns: 1fr; gap: 40px; }
+            header { padding: 15px 5%; flex-direction: column; gap: 15px; }
+            nav { margin: 10px 0; }
+        }
+        @media (max-width: 600px) {
+            .form-grid { grid-template-columns: 1fr; }
+            .form-panel { padding: 25px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header Navigation Section -->
+    <header>
+        <a href="#" class="logo">Mera<span>Ghar</span></a>
+        <nav>
+            <a href="#">Home</a>
+            <a href="#">Buy</a>
+            <a href="#">Rent</a>
+            <a href="#">About</a>
+            <a href="#" class="active">Contact</a>
+        </nav>
+        <a href="#" class="btn-list">List Property</a>
+    </header>
+
+    <!-- Header Hero Split Showcase -->
+    <section class="contact-hero">
+        <h1>Connect with Our Advisors</h1>
+        <p>Have questions about a listing, valuation processing, or investment parameters? Reach out directly to our regional desks.</p>
+    </section>
+
+    <!-- Core Form Layout Framework -->
+    <main class="contact-section">
+        
+        <!-- Left Side: Channels Information Info -->
+        <div class="info-panel">
+            <div>
+                <h2>Get In Touch</h2>
+                <p>Drop by our offices or ping us online. Our investment management teams respond inside two business hours.</p>
+            </div>
+
+            <!-- Call Info -->
+            <div class="contact-card">
+                <div class="card-icon"><i class="fa-solid fa-phone-volume"></i></div>
+                <div class="card-details">
+                    <h4>Direct Phone Hotlines</h4>
+                    <a href="tel:+9242111637244">+92 (42) 111-MERA-GHAR</a>
+                    <a href="tel:+92518849204">+92 (51) 884-9204</a>
+                </div>
+            </div>
+
+            <!-- Email Info -->
+            <div class="contact-card">
+                <div class="card-icon"><i class="fa-solid fa-envelope-open-text"></i></div>
+                <div class="card-details">
+                    <h4>Electronic Enquiries</h4>
+                    <a href="mailto:info@meraghar.com">info@meraghar.com</a>
+                    <a href="mailto:invest@meraghar.com">invest@meraghar.com</a>
+                </div>
+            </div>
+
+            <!-- Location Info -->
+            <div class="contact-card">
+                <div class="card-icon"><i class="fa-solid fa-map-location-dot"></i></div>
+                <div class="card-details">
+                    <h4>Headquarters Office</h4>
+                    <p>Building 44-CCA, Phase 6, DHA,<br>Lahore, Pakistan</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Side: Direct Message Transmission Box -->
+        <div class="form-panel">
+            <h3>Send Secure Message</h3>
+            <form action="#" method="POST" onsubmit="event.preventDefault(); alert('Thank you! Your property advisor will contact you shortly.');">
+                
+                <div class="form-grid">
+                    <div class="form-control">
+                        <label for="name">Your Name</label>
+                        <input type="text" id="name" placeholder="e.g. Ali Ahmed" required>
+                    </div>
+                    <div class="form-control">
+                        <label for="email">Email Address</label>
+                        <input type="email" id="email" placeholder="name@example.com" required>
+                    </div>
+                </div>
+
+                <div class="form-grid">
+                    <div class="form-control">
+                        <label for="phone">Mobile Number</label>
+                        <input type="tel" id="phone" placeholder="+92 300 1234567" required>
+                    </div>
+                    <div class="form-control">
+                        <label for="interest">Property Interest</label>
+                        <select id="interest">
+                            <option value="buy">Buying a Property</option>
+                            <option value="rent">Renting a Space</option>
+                            <option value="sell">Listing / Selling My Home</option>
+                            <option value="investment">Commercial Equity Advisory</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group-full form-control">
+                    <label for="message">Detailed Message / Listing Requirements</label>
+                    <textarea id="message" rows="5" placeholder="Describe the type of property, desired location, budget threshold, or listing concerns..." required></textarea>
+                </div>
+
+                <button type="submit" class="btn-submit">
+                    <i class="fa-solid fa-paper-plane"></i> Dispatch Inquiry
+                </button>
+            </form>
+        </div>
+    </main>
+
+    <!-- Strategic Map Integration Anchor Area -->
+    <section style="padding: 0 10% 80px 10%;">
+        <div class="map-container">
+            <!-- Embed standard dark themed or plain geographical map framing safely -->
+            <iframe class="map-placeholder" src="https://maps.google.com/maps?q=DHA%20Phase%206%20Lahore&t=&z=13&ie=UTF8&iwloc=&output=embed"></iframe>
+        </div>
+    </section>
+
+    <!-- Consistent Brand Footer Structure -->
+    <footer>
+        <p>&copy; 2026 Mera Ghar Property Homes. All rights reserved.</p>
+    </footer>
+
+</body>
+</html>
